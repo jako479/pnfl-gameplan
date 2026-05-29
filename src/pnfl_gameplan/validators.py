@@ -232,18 +232,6 @@ def _validate_defense(
 
         two_dl_count = sum(1 for p in plays if p.personnel_grouping == DefensivePersonnel.RUN_AND_SHOOT)
 
-        if rule.min_two_dl is not None and two_dl_count < rule.min_two_dl:
-            violations.append(
-                Violation(
-                    rule_name=RuleName.CATEGORY_MIN_TWO_DL,
-                    message=(
-                        f"Defensive category '{category}' has {two_dl_count} 2-DL plays; "
-                        f"PNFL requires at least {rule.min_two_dl}."
-                    ),
-                    pool_category=category,
-                )
-            )
-
         if rule.max_two_dl_percent is not None and Fraction(two_dl_count, len(plays)) > rule.max_two_dl_percent:
             limit = _format_percent(rule.max_two_dl_percent)
             violations.append(

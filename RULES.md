@@ -77,15 +77,15 @@ The PNFL "2-DL" rule treats Run-and-Shoot personnel (`DefensivePersonnel.RUN_AND
 
 ### Optional categories (if any play uses them)
 
-| Pool category | Min plays if used | 2-DL constraints |
+| Pool category | Min plays if used | 2-DL cap |
 |---|---|---|
 | `GLrun` (Goal Line Run) | 3 | — |
 | `GLpass` (Goal Line Pass) | 3 | — |
 | `RunDazzle` | 4 | — |
-| `PassDazzle` | 4 | ≥ 2 2-DL plays AND ≤ 50% |
+| `PassDazzle` | 4 | ≤ 50% |
 
 ## Rules explicitly NOT enforced
 
-- **Line-of-scrimmage personnel constraints.** PNFL rules dictate how many defenders must be within 5 yards of the LOS for each pass category. That's a play-design constraint, not a gameplan-construction constraint, and pnfl-gameplan assumes plays are valid for their pool category.
+- **Per-play personnel constraints.** PNFL rules dictate the personnel each pass category's plays must use — e.g. *Pass Short: minimum two DLs and three LBs, at least one DL defending the LOS*; *Pass Dazzle: at least two 2-DLs in the play and at least two players covering the LOS*. Those describe how each individual play must be built, not how many plays of a given type the gameplan must contain, so they are play-design constraints. pnfl-gameplan assumes plays are valid for their pool category.
 - **Situational eligibility.** "Pass Long callable on 1st or 2nd down when greater than 10 yards" is an in-game decision rule, not a gameplan-construction rule.
 - **Disallowed offensive pass-long-left / pass-long-middle.** Enforced upstream by the play pool's directory layout (no such pool category exists).

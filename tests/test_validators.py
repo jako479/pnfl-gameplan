@@ -115,6 +115,17 @@ def test_offense_unused_optional_category_is_silent(play_pool: PlayPool, complia
     assert all(v.pool_category != "RL" for v in violations)
 
 
+def test_offense_below_64_plays_is_compliant(play_pool: PlayPool, compliant_offense: GamePlan) -> None:
+    # Offense has no total-play-count rule (unlike defense). Dropping the entire
+    # optional RL block (4 plays) leaves the gameplan at 60 < 64; every required
+    # category still meets its min, so the gameplan should be fully compliant.
+    gp = clear_category(compliant_offense, play_pool, "RL")
+    filled = sum(1 for p in gp.normal_plays if p is not None)
+    assert filled == 60
+    violations = validate_gameplan(gp, PNFL_RULES, play_pool)
+    assert violations == ()
+
+
 # ---------------------------------------------------------------------------
 # Offense: attribute caps
 # ---------------------------------------------------------------------------
@@ -200,6 +211,28 @@ def test_defense_required_category_missing_reports_violation(play_pool: PlayPool
     assert len(required) == 1
 
 
+def test_defense_below_min_count_reports_violation(play_pool: PlayPool, compliant_defense: GamePlan) -> None:
+    # PassLong sits at exactly its min (6). Replace one PassLong slot with an
+    # extra RunLeft play — PassLong drops to 5 < 6, total stays 64, and no
+    # other rule trips (RunLeft just goes from 10 to 11).
+    runleft_candidates = [
+        p
+        for p in play_pool.defensive_plays
+        if p.pool_category == "RunLeft" and p.personnel_grouping != DefensivePersonnel.RUN_AND_SHOOT
+    ]
+    # Compliant baseline uses the first 10 RunLeft non-R&S plays (slots 0-9);
+    # the 11th avoids tripping DUPLICATE_PLAY.
+    assert len(runleft_candidates) >= 11
+    swap_in = to_custom_play(runleft_candidates[10])
+    # PassLong slots are 44-49 in the compliant builder.
+    gp = replace_slot(compliant_defense, 44, swap_in)
+    violations = validate_gameplan(gp, PNFL_RULES, play_pool)
+    short = [v for v in violations if v.rule_name == RuleName.CATEGORY_MIN_COUNT and v.pool_category == "PassLong"]
+    assert len(short) == 1
+    assert "5 plays" in short[0].message
+    assert "6" in short[0].message
+
+
 # ---------------------------------------------------------------------------
 # Defense: 2-DL constraints
 # ---------------------------------------------------------------------------
@@ -223,26 +256,6 @@ def test_defense_too_many_two_dl_reports_violation(play_pool: PlayPool, complian
         v for v in violations if v.rule_name == RuleName.CATEGORY_MAX_TWO_DL_PERCENT and v.pool_category == "PassShort"
     ]
     assert len(two_dl) == 1
-
-
-def test_defense_pass_dazzle_below_min_two_dl_reports_violation(
-    play_pool: PlayPool, compliant_defense: GamePlan
-) -> None:
-    # Compliant baseline has PassDazzle at exactly the 2-DL minimum (2 R&S).
-    # Replace one of those R&S plays with a non-R&S play → 1 R&S < min 2.
-    non_rs = [
-        p
-        for p in play_pool.defensive_plays
-        if p.pool_category == "PassDazzle" and p.personnel_grouping != DefensivePersonnel.RUN_AND_SHOOT
-    ]
-    swap_in = to_custom_play(non_rs[0])
-    # PassDazzle slots in builder are 60-63; the first two are R&S.
-    gp = replace_slot(compliant_defense, 60, swap_in)
-    violations = validate_gameplan(gp, PNFL_RULES, play_pool)
-    min_two_dl = [
-        v for v in violations if v.rule_name == RuleName.CATEGORY_MIN_TWO_DL and v.pool_category == "PassDazzle"
-    ]
-    assert len(min_two_dl) == 1
 
 
 # ---------------------------------------------------------------------------

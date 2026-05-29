@@ -50,15 +50,15 @@ class DefenseCategoryRule:
     plays. `required=False` means the category is optional; if any play uses
     it, the remaining constraints apply.
 
-    2-DL constraints model the PNFL rule that Run-and-Shoot personnel
-    (`DefensivePersonnel.RUN_AND_SHOOT`) count as "2-DL" plays.
-    `min_two_dl` is a floor on absolute count; `max_two_dl_percent` is a cap
-    on the fraction of plays in the category that are 2-DL.
+    `max_two_dl_percent` caps the fraction of plays in the category that use
+    Run-and-Shoot personnel (`DefensivePersonnel.RUN_AND_SHOOT`) — the PNFL
+    "2-DL" rule. Per-play personnel requirements (minimum DL/LB counts on the
+    field) are play-design constraints, not aggregate gameplan rules, so they
+    are not modeled here.
     """
 
     required: bool
     min_count: int
-    min_two_dl: int | None = None
     max_two_dl_percent: Fraction | None = None
 
 
@@ -102,9 +102,9 @@ def _build_defense_rules() -> dict[str, DefenseCategoryRule]:
         # Optional Goal Line. 3 each.
         "GLrun": DefenseCategoryRule(required=False, min_count=3),
         "GLpass": DefenseCategoryRule(required=False, min_count=3),
-        # Optional Razzle Dazzle. 4 each. Pass Dazzle: at least two 2-DLs, max 50%.
+        # Optional Razzle Dazzle. 4 each. Pass Dazzle caps 2-DL at 50%.
         "RunDazzle": DefenseCategoryRule(required=False, min_count=4),
-        "PassDazzle": DefenseCategoryRule(required=False, min_count=4, min_two_dl=2, max_two_dl_percent=_HALF),
+        "PassDazzle": DefenseCategoryRule(required=False, min_count=4, max_two_dl_percent=_HALF),
     }
 
 

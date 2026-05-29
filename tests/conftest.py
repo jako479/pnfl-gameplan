@@ -88,8 +88,8 @@ def make_compliant_defense_gameplan(pool: PlayPool) -> GamePlan:
     Category mix: RunLeft 10, RunMiddle 10, RunRight 10, PassShort 7,
     PassMedium 7, PassLong 6, GLrun 3, GLpass 3, RunDazzle 4, PassDazzle 4 = 64.
 
-    Non-pass-dazzle picks have no R&S plays (satisfying max-2-DL caps);
-    PassDazzle has exactly 2 R&S (satisfying both min 2 and max 50%).
+    All picks use non-R&S plays so the max-2-DL caps stay satisfied across
+    every category.
     """
     plays: list[Play | None] = []
     plays.extend(_pick_def(pool, "RunLeft", 10))
@@ -101,7 +101,7 @@ def make_compliant_defense_gameplan(pool: PlayPool) -> GamePlan:
     plays.extend(_pick_def(pool, "GLrun", 3))
     plays.extend(_pick_def(pool, "GLpass", 3))
     plays.extend(_pick_def(pool, "RunDazzle", 4))
-    plays.extend(_pick_def_pass(pool, "PassDazzle", 4, two_dl=2))
+    plays.extend(_pick_def_pass(pool, "PassDazzle", 4, two_dl=0))
     assert len(plays) == 64, f"expected 64 plays, got {len(plays)}"
     return _build_gameplan(ProfileType.DEFENSE, pool, plays)
 

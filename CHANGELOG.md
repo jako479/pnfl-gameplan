@@ -31,3 +31,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Removed
 
 - `PnflRuleError` exception type. `save()` no longer raises on PNFL violations; the violation tuple is the report. Strict callers compose `if pg.validate(): handle_violations(...)` themselves.
+- `RuleName.CATEGORY_MIN_TWO_DL` and the corresponding `DefenseCategoryRule.min_two_dl` field. The PassDazzle text *"at least two 2-DLs in the play"* describes per-play personnel (each play must have at least two defensive linemen on the field), not an aggregate "at least two 2-DL plays in the category" — so it belongs with the other per-play personnel rules that pnfl-gameplan does not enforce. The 50% PassDazzle 2-DL cap is unchanged.
