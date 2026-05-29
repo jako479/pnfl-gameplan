@@ -16,6 +16,8 @@ src/pnfl_gameplan/
 
 `PnflGamePlan` wraps a `GamePlan`, a `PnflRules`, and the `PlayPool` it resolves plays against — it does not inherit from `GamePlan`. The same Liskov argument from [pnfl-profile](../pnfl-profile/ARCHITECTURE.md) applies: code written against the `GamePlan` contract should not silently see new exception types from a `PnflGamePlan` handed to it.
 
+To give consumers a `GamePlan`-shaped API anyway, `PnflGamePlan` exposes property forwarders (`normal_plays`, `special_plays`, `clock_plays`, `custom_special_plays`, `stock_special_plays`, `is_offense`, `is_defense`) and method forwarders (`with_normal_plays`, `with_custom_special_plays`) that return a new `PnflGamePlan` — so the rules + pool binding survives every edit. The class also re-exports the format-layer value types (`CustomPlay`, `StockPlay`, `Play`, `ProfileType`) and the I/O functions (`read_gameplan`, `parse_gameplan`, `write_gameplan`, `InvalidGamePlanError`) from `fbpro98-gameplan`, so downstream consumers (`pnfl-gameplanwriter`, `pnfl-gameplanreader`) depend only on `pnfl-gameplan`.
+
 Three layers, three jobs:
 
 - `fbpro98-gameplan` — file I/O for the `.pln` format. No league knowledge.

@@ -58,8 +58,8 @@ def test_duplicate_play_raises_one_violation(compliant_offense: GamePlan, play_p
     violations = validate_gameplan(gp, PNFL_RULES, play_pool)
     dup = [v for v in violations if v.rule_name == RuleName.DUPLICATE_PLAY]
     assert len(dup) == 1
-    assert "slot 63" in dup[0].message
-    assert "slot 0" in dup[0].message
+    assert "slot 64 (16-4)" in dup[0].message
+    assert "slot 1 (1-1)" in dup[0].message
 
 
 def test_unresolved_play_reports_violation(compliant_offense: GamePlan, play_pool: PlayPool) -> None:

@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - `PnflRuleWarning(UserWarning)` exported from the package. Subclass of `UserWarning` so consumers can filter or assert on it.
+- `PnflGamePlan` property forwarders (`normal_plays`, `special_plays`, `clock_plays`, `custom_special_plays`, `stock_special_plays`, `is_offense`, `is_defense`) and method forwarders (`with_normal_plays`, `with_custom_special_plays`) returning new `PnflGamePlan` instances. Class also exposes `NUMBER_NORMAL_PLAYS`, `NUMBER_SPECIAL_SLOTS`, `NUMBER_SPECIAL_CATEGORIES`, `NUMBER_CLOCK_SLOTS` as `ClassVar` constants.
+- Re-exports of `fbpro98-gameplan` value types (`CustomPlay`, `StockPlay`, `Play`, `ProfileType`) and I/O (`read_gameplan`, `parse_gameplan`, `write_gameplan`, `InvalidGamePlanError`) so downstream consumers (`pnfl-gameplanwriter`, `pnfl-gameplanreader`) depend only on `pnfl-gameplan`.
 
 ### Changed
 

@@ -78,7 +78,8 @@ def _resolve_normal_plays(
                 Violation(
                     rule_name=RuleName.DUPLICATE_PLAY,
                     message=(
-                        f"Duplicate play '{play.name}' at slot {slot_index} (already at slot {seen_names[upper]})"
+                        f"Duplicate play '{play.name}' at {_normal_slot_label(slot_index)} "
+                        f"(already at {_normal_slot_label(seen_names[upper])})"
                     ),
                 )
             )
@@ -90,7 +91,7 @@ def _resolve_normal_plays(
             violations.append(
                 Violation(
                     rule_name=RuleName.UNRESOLVED_PLAY,
-                    message=f"Play '{play.name}' at slot {slot_index} not found in play pool",
+                    message=f"Play '{play.name}' at {_normal_slot_label(slot_index)} not found in play pool",
                 )
             )
             continue
@@ -298,6 +299,18 @@ def _group_by_pool_category[T: OffensivePlayRecord | DefensivePlayRecord](
     for record in records:
         by_category.setdefault(record.pool_category, []).append(record)
     return by_category
+
+
+def _normal_slot_label(slot_index: int) -> str:
+    """Format a 0-based normal slot index as `slot N (G-C)`.
+
+    `N` is the 1-based slot number (1..64); `G-C` is the in-game grid position —
+    group 1..16 of 4 plays, column 1..4 inside the group. Slot 0 -> `slot 1 (1-1)`,
+    slot 4 -> `slot 5 (2-1)`, slot 63 -> `slot 64 (16-4)`.
+    """
+    group = slot_index // 4 + 1
+    col = slot_index % 4 + 1
+    return f"slot {slot_index + 1} ({group}-{col})"
 
 
 def _format_percent(value: Fraction) -> str:

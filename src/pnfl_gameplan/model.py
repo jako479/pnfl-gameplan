@@ -9,12 +9,16 @@ from __future__ import annotations
 
 import logging
 import warnings
-from dataclasses import dataclass
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass, replace
 from enum import StrEnum
-from typing import Self
+from typing import ClassVar, Self
 
 from fbpro98_gameplan import (
+    CustomPlay,
     GamePlan,
+    Play,
+    StockPlay,
     parse_gameplan,
     read_gameplan,
     write_gameplan,
@@ -61,7 +65,19 @@ class Violation:
 
 @dataclass(frozen=True, slots=True)
 class PnflGamePlan:
-    """A gameplan bound to a PNFL rule set and the play pool used to resolve plays."""
+    """A gameplan bound to a PNFL rule set and the play pool used to resolve plays.
+
+    Composes a `GamePlan` rather than inheriting from it. Property and method
+    forwarders below give the wrapper a `GamePlan`-shaped API so consumers can
+    treat a `PnflGamePlan` as the gameplan directly; the `with_*` forwarders
+    return a new `PnflGamePlan` (not a bare `GamePlan`) so the rules + pool
+    binding survives every edit.
+    """
+
+    NUMBER_NORMAL_PLAYS: ClassVar[int] = GamePlan.NUMBER_NORMAL_PLAYS
+    NUMBER_SPECIAL_SLOTS: ClassVar[int] = GamePlan.NUMBER_SPECIAL_SLOTS
+    NUMBER_SPECIAL_CATEGORIES: ClassVar[int] = GamePlan.NUMBER_SPECIAL_CATEGORIES
+    NUMBER_CLOCK_SLOTS: ClassVar[int] = GamePlan.NUMBER_CLOCK_SLOTS
 
     gameplan: GamePlan
     rules: PnflRules
@@ -74,6 +90,46 @@ class PnflGamePlan:
     @classmethod
     def from_bytes(cls, data: bytes, rules: PnflRules, play_pool: PlayPool) -> Self:
         return cls(gameplan=parse_gameplan(data), rules=rules, play_pool=play_pool)
+
+    # ---- GamePlan forwarders ----
+
+    @property
+    def normal_plays(self) -> tuple[Play | None, ...]:
+        return self.gameplan.normal_plays
+
+    @property
+    def special_plays(self) -> tuple[Play | None, ...]:
+        return self.gameplan.special_plays
+
+    @property
+    def clock_plays(self) -> tuple[Play | None, Play | None]:
+        return self.gameplan.clock_plays
+
+    @property
+    def custom_special_plays(self) -> tuple[CustomPlay | None, ...]:
+        return self.gameplan.custom_special_plays
+
+    @property
+    def stock_special_plays(self) -> tuple[StockPlay | None, ...]:
+        return self.gameplan.stock_special_plays
+
+    @property
+    def is_offense(self) -> bool:
+        return self.gameplan.is_offense
+
+    @property
+    def is_defense(self) -> bool:
+        return self.gameplan.is_defense
+
+    def with_normal_plays(self, plays: Sequence[Play | None]) -> PnflGamePlan:
+        """Like `GamePlan.with_normal_plays`, but returns a new `PnflGamePlan`."""
+        return replace(self, gameplan=self.gameplan.with_normal_plays(plays))
+
+    def with_custom_special_plays(self, plays: Iterable[CustomPlay | None]) -> PnflGamePlan:
+        """Like `GamePlan.with_custom_special_plays`, but returns a new `PnflGamePlan`."""
+        return replace(self, gameplan=self.gameplan.with_custom_special_plays(plays))
+
+    # ---- PNFL rule layer ----
 
     def validate(self) -> tuple[Violation, ...]:
         """Return every PNFL-rule violation found in the wrapped gameplan."""
