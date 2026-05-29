@@ -17,9 +17,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Documentation: `README.md`, `ARCHITECTURE.md`, `STATUS.md`, `RULES.md`.
 - Test suite: compliant-baseline builders for offense and defense, targeted-violation tests covering every rule (`test_validators.py`), wrapper composition and save warn-and-persist tests (`test_pnfl_gameplan.py`).
 
+### Added
+
+- `PnflRuleWarning(UserWarning)` exported from the package. Subclass of `UserWarning` so consumers can filter or assert on it.
+
 ### Changed
 
-- `PnflGamePlan.save(path)` no longer gates writes on PNFL-rule violations. It now emits one `logger.warning(...)` per violation (prefixed with `pool_category` when present), writes the file regardless, and returns `tuple[Violation, ...]`. PNFL rules are treated as league policy, not file-format invariants — callers that want a strict gate read the returned tuple (or call `validate()` upfront).
+- `PnflGamePlan.save(path)` no longer gates writes on PNFL-rule violations. It now emits one `warnings.warn(..., PnflRuleWarning)` per violation (prefixed with `pool_category` when present), writes the file regardless, and returns `tuple[Violation, ...]`. PNFL rules are treated as league policy, not file-format invariants — callers that want a strict gate read the returned tuple (or call `validate()` upfront). When violations are present, `save()` also logs one `logger.info("Persisted with N PNFL rule violation(s)")` summary line.
+- Switched per-violation reporting from `logger.warning(...)` to `warnings.warn(..., PnflRuleWarning)`. The library does **not** install a `warnings` filter; applications that want every violation surfaced should call `warnings.simplefilter("always", PnflRuleWarning)` at entry. Breaking change for consumers that captured violations via `caplog` — switch to `pytest.warns(PnflRuleWarning)` or `warnings.catch_warnings()`.
 
 ### Removed
 

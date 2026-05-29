@@ -8,6 +8,7 @@ not inherit from `GamePlan`. See ARCHITECTURE.md for the reasoning.
 from __future__ import annotations
 
 import logging
+import warnings
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Self
@@ -23,6 +24,10 @@ from pnfl_playpool import PlayPool
 from pnfl_gameplan.rules import PnflRules
 
 logger = logging.getLogger(__name__)
+
+
+class PnflRuleWarning(UserWarning):
+    """Emitted by `PnflGamePlan.save()` for each PNFL rule violation."""
 
 
 class RuleName(StrEnum):
@@ -80,14 +85,20 @@ class PnflGamePlan:
         """Persist the gameplan; emit per-violation warnings; return the violation tuple.
 
         The file is written regardless of whether the gameplan satisfies the bound
-        PNFL rule set. PNFL violations are emitted as `logger.warning(...)` (one
-        per violation, prefixed with `pool_category` when present) and returned to
-        the caller. Callers that want to gate writes on violations should call
+        PNFL rule set. PNFL violations are emitted as `warnings.warn(..., PnflRuleWarning)`
+        (one per violation, prefixed with `pool_category` when present) and returned
+        to the caller. Callers that want to gate writes on violations should call
         `validate()` first and skip `save()` if the report is non-empty.
+
+        The library does not install a `warnings` filter; applications that want
+        every violation surfaced on every save should call
+        `warnings.simplefilter("always", PnflRuleWarning)` at entry.
         """
         violations = self.validate()
         for v in violations:
             prefix = f"[{v.pool_category}] " if v.pool_category else ""
-            logger.warning("%s%s", prefix, v.message)
+            warnings.warn(f"{prefix}{v.message}", PnflRuleWarning, stacklevel=2)
         write_gameplan(self.gameplan, path)
+        if violations:
+            logger.info("Persisted with %d PNFL rule violation(s)", len(violations))
         return violations

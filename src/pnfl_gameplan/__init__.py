@@ -2,6 +2,7 @@
 
 from pnfl_gameplan.model import (
     PnflGamePlan,
+    PnflRuleWarning,
     RuleName,
     Violation,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "DefenseCategoryRule",
     "OffenseCategoryRule",
     "PnflGamePlan",
+    "PnflRuleWarning",
     "PnflRules",
     "RuleName",
     "Violation",
