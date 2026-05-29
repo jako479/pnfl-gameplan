@@ -7,6 +7,7 @@ not inherit from `GamePlan`. See ARCHITECTURE.md for the reasoning.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Self
@@ -20,6 +21,8 @@ from fbpro98_gameplan import (
 from pnfl_playpool import PlayPool
 
 from pnfl_gameplan.rules import PnflRules
+
+logger = logging.getLogger(__name__)
 
 
 class RuleName(StrEnum):
@@ -51,14 +54,6 @@ class Violation:
     pool_category: str | None = None
 
 
-class PnflRuleError(Exception):
-    """Raised by `PnflGamePlan.save()` when validation finds any violations."""
-
-    def __init__(self, violations: tuple[Violation, ...]) -> None:
-        self.violations = violations
-        super().__init__(f"{len(violations)} PNFL rule violation(s)")
-
-
 @dataclass(frozen=True, slots=True)
 class PnflGamePlan:
     """A gameplan bound to a PNFL rule set and the play pool used to resolve plays."""
@@ -81,9 +76,18 @@ class PnflGamePlan:
 
         return validate_gameplan(self.gameplan, self.rules, self.play_pool)
 
-    def save(self, path: str) -> None:
-        """Validate then write. Raises `PnflRuleError` if any violations exist."""
+    def save(self, path: str) -> tuple[Violation, ...]:
+        """Persist the gameplan; emit per-violation warnings; return the violation tuple.
+
+        The file is written regardless of whether the gameplan satisfies the bound
+        PNFL rule set. PNFL violations are emitted as `logger.warning(...)` (one
+        per violation, prefixed with `pool_category` when present) and returned to
+        the caller. Callers that want to gate writes on violations should call
+        `validate()` first and skip `save()` if the report is non-empty.
+        """
         violations = self.validate()
-        if violations:
-            raise PnflRuleError(violations)
+        for v in violations:
+            prefix = f"[{v.pool_category}] " if v.pool_category else ""
+            logger.warning("%s%s", prefix, v.message)
         write_gameplan(self.gameplan, path)
+        return violations
