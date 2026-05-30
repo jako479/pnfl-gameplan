@@ -13,7 +13,6 @@ from fbpro98_gameplan import (
 
 from pnfl_gameplan.model import (
     PnflGamePlan,
-    PnflRuleWarning,
     RuleName,
     Violation,
 )
@@ -33,7 +32,6 @@ __all__ = [
     "OffenseCategoryRule",
     "Play",
     "PnflGamePlan",
-    "PnflRuleWarning",
     "PnflRules",
     "ProfileType",
     "RuleName",
