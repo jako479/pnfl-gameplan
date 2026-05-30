@@ -43,7 +43,7 @@ def validate_gameplan(
         violations.extend(_validate_offense(offense_records, rules.offense_categories))
     else:
         defense_records = [r for r in resolved if isinstance(r, DefensivePlayRecord)]
-        violations.extend(_validate_defense(defense_records, rules.defense_categories, rules.defense_min_normal_plays))
+        violations.extend(_validate_defense(defense_records, rules.defense_categories))
 
     violations.extend(_validate_special_categories(gameplan, rules.required_special_categories))
 
@@ -191,19 +191,9 @@ def _validate_offense(
 def _validate_defense(
     records: list[DefensivePlayRecord],
     category_rules: dict[str, DefenseCategoryRule],
-    min_normal_plays: int,
 ) -> list[Violation]:
     by_category = _group_by_pool_category(records)
     violations: list[Violation] = []
-
-    total = sum(len(plays) for plays in by_category.values())
-    if total < min_normal_plays:
-        violations.append(
-            Violation(
-                rule_name=RuleName.DEFENSE_MIN_PLAYS,
-                message=(f"Defensive gameplan has {total} resolved plays; PNFL requires at least {min_normal_plays}."),
-            )
-        )
 
     for category, rule in category_rules.items():
         plays = by_category.get(category, [])

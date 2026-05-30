@@ -39,7 +39,6 @@ class RuleName(StrEnum):
 
     DUPLICATE_PLAY = "duplicate_play"
     UNRESOLVED_PLAY = "unresolved_play"
-    DEFENSE_MIN_PLAYS = "defense_min_plays"
     CATEGORY_REQUIRED = "category_required"
     CATEGORY_MIN_COUNT = "category_min_count"
     CATEGORY_MAX_QB_DRAWS = "category_max_qb_draws"

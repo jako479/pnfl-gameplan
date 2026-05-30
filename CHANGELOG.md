@@ -24,3 +24,4 @@
 - Remove `RuleName.CATEGORY_MIN_TWO_DL` (misread of per-play personnel rule).
 - Remove `DefenseCategoryRule.min_two_dl` field.
 - PassDazzle 50% 2-DL cap unchanged.
+- Remove `PnflRules.defense_min_normal_plays` and `RuleName.DEFENSE_MIN_PLAYS` — no such overall-count rule exists in the PNFL defensive rule set.

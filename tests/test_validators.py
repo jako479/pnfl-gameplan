@@ -189,19 +189,8 @@ def test_offense_timed_above_50_percent_reports_violation(play_pool: PlayPool, c
 
 
 # ---------------------------------------------------------------------------
-# Defense: min plays + category min count
+# Defense: category presence and min count
 # ---------------------------------------------------------------------------
-
-
-def test_defense_below_64_plays_reports_violation(play_pool: PlayPool, compliant_defense: GamePlan) -> None:
-    # Blank one slot — defense gameplan is no longer at 64. PassDazzle is the
-    # last block (slots 60-63), and clearing slot 63 leaves PassDazzle at 3,
-    # which also trips its min-count rule; the test only asserts the slot count.
-    gp = replace_slot(compliant_defense, 63, None)
-    violations = validate_gameplan(gp, PNFL_RULES, play_pool)
-    slot_violations = [v for v in violations if v.rule_name == RuleName.DEFENSE_MIN_PLAYS]
-    assert len(slot_violations) == 1
-    assert "63" in slot_violations[0].message
 
 
 def test_defense_required_category_missing_reports_violation(play_pool: PlayPool, compliant_defense: GamePlan) -> None:
@@ -309,7 +298,6 @@ def test_custom_rules_override_min_count(play_pool: PlayPool, compliant_offense:
         offense_categories=new_off,
         defense_categories=PNFL_RULES.defense_categories,
         required_special_categories=PNFL_RULES.required_special_categories,
-        defense_min_normal_plays=PNFL_RULES.defense_min_normal_plays,
     )
     violations = validate_gameplan(compliant_offense, rules, play_pool)
     psl_short = [v for v in violations if v.rule_name == RuleName.CATEGORY_MIN_COUNT and v.pool_category == "PSL"]

@@ -128,12 +128,10 @@ class PnflRules:
     offense_categories: dict[str, OffenseCategoryRule]
     defense_categories: dict[str, DefenseCategoryRule]
     required_special_categories: frozenset[int]
-    defense_min_normal_plays: int  # All 64 slots used on defense.
 
 
 PNFL_RULES: Final[PnflRules] = PnflRules(
     offense_categories=_build_offense_rules(),
     defense_categories=_build_defense_rules(),
     required_special_categories=_REQUIRED_SPECIAL_CATEGORIES,
-    defense_min_normal_plays=64,
 )
