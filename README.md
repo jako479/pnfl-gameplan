@@ -1,12 +1,12 @@
 # pnfl-gameplan
 
-PNFL league rules and validation layered on top of [fbpro98-gameplan](../fbpro98-gameplan/). Wraps an fbpro98 `GamePlan` with the PNFL rule set so rule-violation reporting and rule-aware tooling all see the same source of truth. PNFL rules are treated as **league policy**, not file-format invariants — `save()` emits per-violation warnings but writes the file regardless. Callers that want a strict gate inspect `validate()` (or `save()`'s returned tuple) and decide for themselves.
+PNFL league rules layered on [fbpro98-gameplan](../fbpro98-gameplan/). Wraps a `GamePlan` so `validate()` reports rule violations and `save()` writes the file regardless — emitting one `PnflRuleWarning` per violation. Callers that want a strict gate inspect the returned violation tuple.
 
 ## Setup
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+py -3.13 -m venv .venv
+.venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
